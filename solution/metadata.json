@@ -1,0 +1,4 @@
+{
+    "image": "sberbank/python",
+    "entry_point": "python classify_thermopoints.py {input_csv} {output_csv}"
+}
