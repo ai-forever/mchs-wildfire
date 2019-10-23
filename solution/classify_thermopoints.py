@@ -11,11 +11,12 @@ from tqdm import tqdm as tqdm
 DATASETS_PATH = os.environ.get('DATASETS_PATH', '../data/')
 
 ncep_data = []
-year = 2018
+year = 2019
 for var in ('air', 'uwnd', 'rhum'):
     dataset_filename = '{}/ncep/{}.{}.nc'.format(DATASETS_PATH, var, year)
     ncep_data.append(xarray.open_dataset(dataset_filename))
 ncep_data = xarray.merge(ncep_data)
+
 
 def extract_features(row):
     point = ncep_data.sel(
@@ -36,8 +37,9 @@ def extract_features(row):
     v3w = p3w.sel(time=date)
 
     return {
-        'fire_type': row['fire_type'],
-        'fire_type_name': row['fire_type_name'],
+        'fire_id': row['fire_id'],
+        'fire_type': '',
+        'fire_type_name': '',
         'date': row['date'],
         'temperature': v.air.values.item(0),
         'humidity': v.rhum.values.item(0),
@@ -62,8 +64,9 @@ if __name__ == '__main__':
         features = extract_features(row)
         df_features.append(features)
     df_features = pandas.DataFrame(df_features)
+    df_features.set_index('fire_id', inplace=True)
 
-    with open('model.pickle') as fin:
+    with open('model.pickle', 'rb') as fin:
         fire_classifier = pickle.load(fin)
 
     X = df_features.iloc[:, 3:].fillna(0)
